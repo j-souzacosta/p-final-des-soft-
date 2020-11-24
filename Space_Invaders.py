@@ -1,35 +1,48 @@
 import pygame
 import time
 import random
+from pygame import mixer 
 
 BLACK = pygame.Color(0, 0, 0)
 WHITE = pygame.Color(255, 255, 255)
 GREEN = pygame.Color(0, 255, 0)
 
+file = 'music_menu.mp3'
+
 clock = pygame.time.Clock()
 IDENTIFY_COLOR=pygame.Color(211,34,120)
 pygame.init()
+pygame.mixer.init()
 WIDTH=800
 HEIGHT=600
 #Tamanho da tela
 #window = pygame.display.set_mode((800, 600))
 x=100
-y=10
+y=100
 
 all_sprites = pygame.sprite.Group()
 tiros = pygame.sprite.Group()
+player = pygame.sprite.Group()
 inimigos = pygame.sprite.Group()
+tiros_inimigos = pygame.sprite.Group()
+    # for i in range(8):
+    #     tiro = tiro(tiro4.png)
+    #     all_sprites.add(player)
+
+
+pygame.mixer.music.load(file)
+pygame.mixer.music.play()
+pygame.event.wait(-1)
 
 def home_screen(screen): #Cria a tela inicial do jogo.
     playing = True
-    # Carregar a fonte
-    # Start = font.render(" ENTER : START ", True, WHITE, None)
-    # Sair = font.render("   ESC : OUT      ", True, WHITE, None)
-    # Start_rect = Start.get_rect(center = (WIDTH // 2, HEIGHT - 100))
-    # Sair_rect = Sair.get_rect(center = ((WIDTH + 15) // 2, HEIGHT - 50))
-    screen.fill(BLACK)
+    screen.blit(Menu_img,(0,0))
+    #music_menu.play()
+    #pygame.mixer.music.play(music_menu)
     while playing:
+        
         for event in pygame.event.get():
+            
             if event.type == pygame.QUIT:
                 #music_menu.stop()
                 return False
@@ -42,10 +55,6 @@ def home_screen(screen): #Cria a tela inicial do jogo.
                     # music_menu.stop()
                     return True
 
-        screen.fill(BLACK)
-        # screen.blit(Start, Start_rect)
-        # screen.blit(Sair, Sair_rect)
-        # clock.tick(60)
         pygame.display.update()
 
 class SpaceInvaders():
@@ -144,7 +153,6 @@ class Alien(pygame.sprite.Sprite): #cria imagem da nave e especifiões
     
     def troca_de_lado(self):
         if self.rect.x > 1580 :
-            pygame.time.set_timer(self.descer,1000)
             self.vx = -5
             self.vy = 0
             
@@ -166,6 +174,7 @@ class Alien(pygame.sprite.Sprite): #cria imagem da nave e especifiões
             self.last = now
             atirar = TiroAlien(self.rect.midtop, -1, GREEN, 4)
             all_sprites.add(atirar)
+            tiros_inimigos.add(atirar)
         #return atirar
         #tiro = Tiro(self.img_tiro, self.rect.centerx, self.rect.y)
         #    all_sprites.add(tiro)
@@ -173,17 +182,21 @@ class Alien(pygame.sprite.Sprite): #cria imagem da nave e especifiões
 
 def game_screen(screen):
     # pygame.transform.rotate <- pesquisar
+    x=100
+    y=100
     nave = Nave(nave_img, tiro_img)
     alien = Alien(Alien_img,x,y)
 
     #Criar vários aliens
     margem = 25 #Espaço entre os aliens e a borda
     espaco = 100 #Espaço entre os aliens
-    for x in range(margem, 1720, espaco):
+    for x in range(margem, 1600, espaco):
         for y in range(margem, int(802 / 3), espaco):
             alien = Alien(Alien_img, x, y)
             all_sprites.add(alien)
-            
+            inimigos.add(alien)
+    
+           
             
     #nave_marciano_verde=pygame.image.load()
     #nave_marciano_azul=pygame.image.load("nave_marciano_azul.png")
@@ -192,16 +205,18 @@ def game_screen(screen):
     posicao_tiro_y=600
 
     all_sprites.add(nave)
-    all_sprites.add(alien)
-    inimigos.add(alien)
+    player.add(nave)
+    #all_sprites.add(alien)
+    #inimigos.add(alien)
     playing=True
 
+    
+    #pygame.mixer.music.play(loops=-1)
     while playing:
 
 
         # move o quadrado um pixel por ciclo
         #position_x +=0.01
-
         clock.tick(60)#deia o jogo em 60 fps
 
         screen.blit(fundo,(0,0)) # enche a tela de preto
@@ -223,9 +238,8 @@ def game_screen(screen):
                     nave.vy += 10
                 if event.key == pygame.K_SPACE:
                     nave.atira()
-                    #nave.delay()
                 if event.key == pygame.K_ESCAPE:
-                    return False
+                    playing = home_screen(screen)
             if event.type==pygame.KEYUP:
                 if event.key == pygame.K_a:
                     nave.vx += 10
@@ -238,15 +252,28 @@ def game_screen(screen):
                 
         # if (pygame.sprite.groupcollide(Nave, Alien, False, False, pygame.sprite.collide_mask) or
         #     Fpygame.sprite.groupcollide(Nave, Alien, False, False, pygame.sprite.collide_mask)):
-        if nave.spritecollide(inimigos, False, pygame.sprite.collide_mask):
-             # Game over
-            input()
-            break                      
+        # if nave.spritecollide(inimigos, False, pygame.sprite.collide_mask):
+        #      # Game over
+        #     input()
+        #     break                      
         #colisão dos objetos 
 
         # desenha o quadrado em sua nova posição
 
+        #Cria colisao
+        hits = pygame.sprite.spritecollide(player, inimigos, True)
+        hits_I = pygame.sprite.spritecollide(tiros, inimigos, True)
+        hits_TI = pygame.sprite.spritecollide(player,tiros_inimigos, True)
 
+        #Game over se o tiro acertar a nave
+        if hits or hits_TI:
+            screen.blit(gameover,(0,0))
+            pygame.time.wait(5000)
+            playing = home_screen(screen)
+            
+        if hits_I:
+            all_sprites.add(alien)
+            inimigos.remove(alien)
 
         #pygame.draw.rect(screen, IDENTIFY_COLOR, [position_x, position_y, 50, 50])
         
@@ -265,11 +292,15 @@ def game_screen(screen):
         
 screen = pygame.display.set_mode((1720,802))#criador do display
 
+
+#Carega as imagem
 pygame.display.set_caption('space invaders')
 fundo=pygame.image.load('fundo11.gif')
+gameover_img=pygame.image.load('gameover.png')
 nave_img = pygame.image.load("nave.png")
 tiro_img=pygame.image.load('tiro4.png')
 Alien_img=pygame.image.load("nave_marciano1.png")
+Menu_img=pygame.image.load("Space invaders fundo.png")
 #img_tiro_alien_img=pygame.image.load("tiro_alien.png")
 
 playing = True
