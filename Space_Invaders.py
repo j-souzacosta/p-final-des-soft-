@@ -1,22 +1,26 @@
+#importa as bibliotecas necessarias
 import pygame
 import time
 import random
 from pygame import mixer 
 
+# definições de algumas cores 
+
 BLACK = pygame.Color(0, 0, 0)
 WHITE = pygame.Color(255, 255, 255)
 GREEN = pygame.Color(0, 255, 0)
 
+# arquivo de audio utilizado no no jogo 
 file = 'music_menu.mp3'
 
+#inicialização do jogo e do mixer 
 clock = pygame.time.Clock()
-IDENTIFY_COLOR=pygame.Color(211,34,120)
 pygame.init()
 pygame.mixer.init()
 WIDTH=800
 HEIGHT=600
 #Tamanho da tela
-#window = pygame.display.set_mode((800, 600))
+
 x=100
 y=100
 
@@ -25,37 +29,28 @@ tiros = pygame.sprite.Group()
 player = pygame.sprite.Group()
 inimigos = pygame.sprite.Group()
 tiros_inimigos = pygame.sprite.Group()
-    # for i in range(8):
-    #     tiro = tiro(tiro4.png)
-    #     all_sprites.add(player)
+   
 
-
+#Faz load e toca a musica
 pygame.mixer.music.load(file)
 pygame.mixer.music.play()
 pygame.event.wait(-1)
+pygame.mixer.music.set_volume(0.25)
 
 def home_screen(screen): #Cria a tela inicial do jogo.
     playing = True
-    screen.blit(Menu_img,(0,0))
-    #music_menu.play()
-    #pygame.mixer.music.play(music_menu)
+    screen.blit(Menu_img,(0,0)) #Coloca a imagen de menu na tela
     while playing:
-        
-        for event in pygame.event.get():
-            
+        for event in pygame.event.get(): #Faz com que seja posivel fechar o jogo   
             if event.type == pygame.QUIT:
-                #music_menu.stop()
                 return False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    # music_menu.stop()
+                if event.key == pygame.K_ESCAPE: # Fecha o jogo apertando "ESC"
                     return False
-                if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
-                    # playing = True
-                    # music_menu.stop()
+                if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE: # Começa o jogo apertando a barra de espaço ou enter
                     return True
 
-        pygame.display.update()
+        pygame.display.update() # da um uptade na tela
 
 class SpaceInvaders():
     def __init__(self):
@@ -75,7 +70,7 @@ class Nave(pygame.sprite.Sprite): #cria imagem da nave e especifiões
         self.vy = 0
         self.img_tiro = img_tiro
         self.last = pygame.time.get_ticks()
-        self.cooldown = 300
+        self.cooldown = 500
 
     def update(self):
         self.rect.x += self.vx
@@ -104,7 +99,7 @@ class Tiro(pygame.sprite.Sprite):
           
         
     
-    def update(self):
+    def update(self): # movimentação do tiro do aliado 
         self.rect.x += self.vx
         self.rect.y += self.vy
         
@@ -114,7 +109,7 @@ class Tiro(pygame.sprite.Sprite):
 class TiroAlien(pygame.sprite.Sprite): #Cria o tiro do alien
     def __init__(self,xy,direcao, GREEN, velocidade=8):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((4,8))
+        self.image = pygame.Surface((5,16)) # tamanho do tiro do alien 
         self.image.fill(GREEN)
         self.rect = self.image.get_rect()
         self.rect.x = xy[0]
@@ -122,7 +117,7 @@ class TiroAlien(pygame.sprite.Sprite): #Cria o tiro do alien
         self.direction = direcao
         self.speed = velocidade * direcao
 
-    def update(self):
+    def update(self):# velocidade do tiro do alien 
         self.rect.y -= self.speed
         if self.rect.bottom < 0:
             self.kill()    
@@ -140,7 +135,7 @@ class Alien(pygame.sprite.Sprite): #cria imagem da nave e especifiões
         self.vx = 5
         self.vy = 0
         self.last = pygame.time.get_ticks()
-        p = random.randint(1000,50000)
+        p = random.randint(1000,10000) # taxa de tiros das naves inimigas 
         self.cooldown = p
     
     def update(self):
@@ -149,7 +144,7 @@ class Alien(pygame.sprite.Sprite): #cria imagem da nave e especifiões
         self.atirar()
         self.troca_de_lado()
         
-        
+    # especificando movimentação da nave     
     
     def troca_de_lado(self):
         if self.rect.x > 1580 :
@@ -172,7 +167,7 @@ class Alien(pygame.sprite.Sprite): #cria imagem da nave e especifiões
 
         if now - self.last >= self.cooldown:
             self.last = now
-            atirar = TiroAlien(self.rect.midtop, -1, GREEN, 4)
+            atirar = TiroAlien(self.rect.midtop, -1, GREEN, 6)
             all_sprites.add(atirar)
             tiros_inimigos.add(atirar)
         #return atirar
@@ -181,12 +176,14 @@ class Alien(pygame.sprite.Sprite): #cria imagem da nave e especifiões
         #    tiros.add(tiro)
 
 def game_screen(screen):
-    # pygame.transform.rotate <- pesquisar
     x=100
     y=100
+    m = 0
+    vidas = 3
+    j=0
     nave = Nave(nave_img, tiro_img)
     alien = Alien(Alien_img,x,y)
-
+    b=0
     #Criar vários aliens
     margem = 25 #Espaço entre os aliens e a borda
     espaco = 100 #Espaço entre os aliens
@@ -195,6 +192,8 @@ def game_screen(screen):
             alien = Alien(Alien_img, x, y)
             all_sprites.add(alien)
             inimigos.add(alien)
+            b +=1 # numero de aliens totais
+            
     
            
             
@@ -206,28 +205,28 @@ def game_screen(screen):
 
     all_sprites.add(nave)
     player.add(nave)
-    #all_sprites.add(alien)
-    #inimigos.add(alien)
+
     playing=True
 
     
-    #pygame.mixer.music.play(loops=-1)
+
     while playing:
 
 
         # move o quadrado um pixel por ciclo
-        #position_x +=0.01
+
         clock.tick(60)#deia o jogo em 60 fps
 
         screen.blit(fundo,(0,0)) # enche a tela de preto
-        # posicao_tiro_x= position_x
-        # posicao_tiro_y= position_y
+
+        all_sprites.add(nave)
+        player.add(nave)
         events = pygame.event.get()
         for event in events:
-            if event.type==pygame.QUIT:
+            if event.type==pygame.QUIT: # linha para sair do jogo 
                 return False
             
-            if event.type==pygame.KEYDOWN:
+            if event.type==pygame.KEYDOWN: # designação de teclas para a movimentação e tiro  w, a ,s, d, space
                 if event.key == pygame.K_a:
                     nave.vx -= 10
                 if event.key == pygame.K_d:
@@ -250,66 +249,125 @@ def game_screen(screen):
                 if event.key == pygame.K_s:
                     nave.vy -= 10
                 
-        # if (pygame.sprite.groupcollide(Nave, Alien, False, False, pygame.sprite.collide_mask) or
-        #     Fpygame.sprite.groupcollide(Nave, Alien, False, False, pygame.sprite.collide_mask)):
-        # if nave.spritecollide(inimigos, False, pygame.sprite.collide_mask):
-        #      # Game over
-        #     input()
-        #     break                      
+  
         #colisão dos objetos 
 
         # desenha o quadrado em sua nova posição
 
         #Cria colisao
-        hits = pygame.sprite.spritecollide(player, inimigos, True)
-        hits_I = pygame.sprite.spritecollide(tiros, inimigos, True)
-        hits_TI = pygame.sprite.spritecollide(player,tiros_inimigos, True)
+        hits = pygame.sprite.spritecollide(nave, inimigos, True)
+        hits_I = pygame.sprite.groupcollide(inimigos, tiros, True,True)
+        hits_TI = pygame.sprite.spritecollide(nave,tiros_inimigos, True)
 
-        #Game over se o tiro acertar a nave
-        if hits or hits_TI:
-            screen.blit(gameover,(0,0))
-            pygame.time.wait(5000)
-            playing = home_screen(screen)
-            
-        if hits_I:
-            all_sprites.add(alien)
-            inimigos.remove(alien)
+        #Perde uma vida se o tiro acertar a nave
+        if hits or hits_TI: #checa colisão entre o tiro aliado com as naves inimigas 
+            vidas = vidas -1 # tira 1 de suas vidas es for atingido
+            if vidas == 0:
+                screen.blit(gameover_img,(0,0)) # Mostra a tela de derrota
+                pygame.display.flip()
+                pygame.time.wait(2500) # Espera um pouco antes
+                playing = home_screen(screen) # Volta para tela inicial
 
-        #pygame.draw.rect(screen, IDENTIFY_COLOR, [position_x, position_y, 50, 50])
-        
+                #Reseta o jogo
+                x=100
+                y=100
+                m = 0
+                vidas = 3
+                j=0
+                b=0
+                nave.vy = 0
+                nave.vx = 0
+                nave.rect.x = 650
+                nave.rect.y = 550
+                margem = 25 
+                espaco = 100 
+                all_sprites.remove(inimigos)
+                inimigos.empty()
+                all_sprites.remove(player)
+                player.empty()
+                all_sprites.remove(tiros_inimigos)
+                tiros_inimigos.empty()
+                all_sprites.remove(tiros)
+                tiros.empty()
+                for x in range(margem, 1600, espaco):
+                    for y in range(margem, int(802 / 3), espaco):
+                        alien = Alien(Alien_img, x, y)
+                        all_sprites.add(alien)
+                        inimigos.add(alien)
+                        b +=1
+                    
+        for hit in hits_I or hits: # checa colisão entre o tiro do inimigo e a nave aliada 
+            #tira 1 do numero total de aliens,, ja que acertou um
+            b = b-1
+            if b == 0: #Checa se matou todos os aliens
+
+                screen.blit(ganhou_img,(0,0)) # Mostra a tela de vitoria
+                pygame.display.flip()
+                pygame.time.wait(2500) # espera um pouco antes de fazer o proximo passo
+                playing = home_screen(screen) # Abre a tela inicial novamente
+                
+                #Reseta o jogo
+                x=100
+                y=100
+                m = 0
+                vidas = 3
+                j=0
+                b=0
+                nave.vy = 0
+                nave.vx = 0
+                nave.rect.x = 650
+                nave.rect.y = 550
+                #Criar vários aliens
+                margem = 25 #Espaço entre os aliens e a borda
+                espaco = 100 #Espaço entre os aliens
+                all_sprites.remove(inimigos)
+                inimigos.empty()
+                all_sprites.remove(player)
+                player.empty()
+                all_sprites.remove(tiros_inimigos)
+                tiros_inimigos.empty()
+                all_sprites.remove(tiros)
+                tiros.empty()
+                for x in range(margem, 1600, espaco):
+                    for y in range(margem, int(802 / 3), espaco):
+                        alien = Alien(Alien_img, x, y)
+                        all_sprites.add(alien)
+                        inimigos.add(alien)
+                        b +=1
+                        
         all_sprites.update()
         all_sprites.draw(screen)
-
-        #screen.blit(nave_marciano_azul,(posição_nave1_x,posicao_nave1_y))
-        #screen.blit(nave_marciano_azul,(650,300))
-
-        #screen.blit(nave_marciano_verde,(650,100))
-
-
-        #pygame.draw.rect(screen, IDENTIFY_COLOR, [posicao_tiro_x, posicao_tiro_y, 10, 10])
+        
+        if vidas != 0:# imprime na tela a vida do jogador 
+            for j in range(vidas):        
+                screen.blit(vida_img,(100 * j ,700))
+                pygame.display.flip()
+                
 
         pygame.display.flip()
         
 screen = pygame.display.set_mode((1720,802))#criador do display
 
 
-#Carega as imagem
-pygame.display.set_caption('space invaders')
+#Carega as imagens 
+pygame.display.set_caption('Space Invaders')
 fundo=pygame.image.load('fundo11.gif')
 gameover_img=pygame.image.load('gameover.png')
 nave_img = pygame.image.load("nave.png")
 tiro_img=pygame.image.load('tiro4.png')
 Alien_img=pygame.image.load("nave_marciano1.png")
-Menu_img=pygame.image.load("Space invaders fundo.png")
-#img_tiro_alien_img=pygame.image.load("tiro_alien.png")
+Menu_img=pygame.image.load("tela inicial.png")
+vida_img=pygame.image.load("vidaa.png")
+ganhou_img=pygame.image.load("YOU WIN.png")
 
+ 
 playing = True
-
+# Roda o jogo ou a tela de inicio
 while playing:
     playing = home_screen(screen)
     if playing:
         playing = game_screen(screen)
     else:
         pygame.quit()
-        exit()
+        
         
