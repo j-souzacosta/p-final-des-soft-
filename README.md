@@ -20,3 +20,6 @@
        Mover a nave para baixo - "s"
        Para atirar aperte "space"
        Para sair do jogo aperte "esc"
+
+### Link para o video no Youtube
+       https://youtu.be/gOlplQ5ZOvw

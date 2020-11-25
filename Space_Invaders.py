@@ -237,7 +237,7 @@ def game_screen(screen):
                     nave.vy += 10
                 if event.key == pygame.K_SPACE:
                     nave.atira()
-                if event.key == pygame.K_ESCAPE:
+                if event.key == pygame.K_ESCAPE: # pausa o jogo
                     playing = home_screen(screen)
             if event.type==pygame.KEYUP:
                 if event.key == pygame.K_a:
